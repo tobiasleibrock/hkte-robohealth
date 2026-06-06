@@ -4,7 +4,6 @@ import {
   ArrowRight,
   MapPin,
   Pill,
-  ShieldCheck,
 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -12,23 +11,40 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 export const Route = createFileRoute('/')({ component: LandingPage })
 
-const days = ['Today', 'Tomorrow', 'Fri', 'Sat']
-const times = ['08:30', '09:30', '10:30', '12:00', '14:00', '16:00', '18:00']
-const routeStops = ['Clinic', 'Lobby B', '22/F', 'Home']
+const days = ['Now', 'Today', 'Tomorrow', 'Fri']
+const times = ['09', '12', '15', '18']
+const routeStops = ['Building lobby', 'Elevator', '22/F hallway', 'Room 2206']
+const medications = [
+  {
+    dose: '1x',
+    name: 'Amlodipine 5mg',
+    instruction: 'Morning after breakfast',
+  },
+  {
+    dose: '2x',
+    name: 'Paracetamol 500mg',
+    instruction: 'Only if needed, max twice daily',
+  },
+  {
+    dose: '1x',
+    name: 'Vitamin D3',
+    instruction: 'Evening with water',
+  },
+]
 
 function LandingPage() {
-  const [step, setStep] = useState<'order' | 'incoming' | 'locked' | 'outcome'>(
-    'order',
-  )
-  const [day, setDay] = useState(days[1])
-  const [time, setTime] = useState(times[3])
+  const [step, setStep] = useState<
+    'order' | 'incoming' | 'locked' | 'outcome'
+  >('order')
+  const [day, setDay] = useState(days[0])
+  const [time, setTime] = useState(times[1])
 
   return (
     <main
-      className="flex min-h-dvh justify-center bg-[#050505] px-5 pb-7 pt-6 text-white"
+      className="flex h-dvh overflow-hidden justify-center bg-[#050505] px-5 pb-7 pt-6 text-white"
       aria-label="htke health robot booking"
     >
-      <section className="flex min-h-[calc(100dvh-3.25rem)] w-full max-w-[430px] flex-col">
+      <section className="flex h-[calc(100dvh-3.25rem)] w-full max-w-[430px] flex-col">
         {step === 'order' ? (
           <OrderScreen
             day={day}
@@ -68,22 +84,28 @@ function OrderScreen({
   onTimeChange: (value: string) => void
   onConfirm: () => void
 }) {
+  const isNow = day === 'Now'
+
   return (
     <Screen>
-      <div className="flex flex-1 flex-col pb-5">
-        <h1 className="m-0 pt-4 text-center text-2xl font-bold tracking-normal">
+      <div className="flex min-h-0 flex-1 flex-col pb-3">
+        <h1 className="m-0 pt-2 text-center text-2xl font-bold tracking-normal">
           Choose robot
         </h1>
 
-        <div className="grid flex-1 place-items-center py-6 text-[12.5rem] leading-none">
-          🤖
+        <div className="grid min-h-0 flex-1 place-items-center py-2">
+          <img
+            src="/robot.png"
+            alt="Health robot"
+            className="max-h-[27rem] w-full scale-110 object-contain"
+          />
         </div>
 
-        <div className="mb-7 grid gap-3 text-center">
-          <h2 className="m-0 text-[2rem] font-bold leading-none tracking-normal">
+        <div className="mb-4 grid gap-2 text-center">
+          <h2 className="m-0 text-[1.9rem] font-bold leading-none tracking-normal">
             Health Robot
           </h2>
-          <p className="mx-auto mb-0 mt-0 max-w-80 text-lg leading-snug text-white/55">
+          <p className="mx-auto mb-0 mt-0 max-w-80 text-base leading-snug text-white/55">
             Comes to your apartment for basic checks.
           </p>
         </div>
@@ -93,13 +115,13 @@ function OrderScreen({
             type="single"
             value={day}
             onValueChange={(value) => value && onDayChange(value)}
-            className="w-full justify-start gap-2 overflow-x-auto"
+            className="grid w-full grid-cols-4 gap-2"
           >
             {days.map((option) => (
               <ToggleGroupItem
                 key={option}
                 value={option}
-                className="h-12 rounded-full border border-white/15 bg-white/5 px-4 text-base font-semibold text-white/75 data-[state=on]:border-white data-[state=on]:bg-white data-[state=on]:text-[#050505]"
+                className="h-12 rounded-2xl border border-white/15 bg-white/5 px-2 text-base font-semibold text-white/75 data-[state=on]:border-white data-[state=on]:bg-white data-[state=on]:text-[#050505]"
               >
                 {option}
               </ToggleGroupItem>
@@ -107,29 +129,31 @@ function OrderScreen({
           </ToggleGroup>
         </PickerGroup>
 
-        <PickerGroup label="Time">
-          <ToggleGroup
-            type="single"
-            value={time}
-            onValueChange={(value) => value && onTimeChange(value)}
-            className="w-full justify-start gap-2 overflow-x-auto"
-          >
-            {times.map((option) => (
-              <ToggleGroupItem
-                key={option}
-                value={option}
-                className="h-12 min-w-20 rounded-full border border-white/15 bg-white/5 px-4 text-base font-semibold text-white/75 data-[state=on]:border-white data-[state=on]:bg-white data-[state=on]:text-[#050505]"
-              >
-                {option}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </PickerGroup>
+        {!isNow ? (
+          <PickerGroup label="Time">
+            <ToggleGroup
+              type="single"
+              value={time}
+              onValueChange={(value) => value && onTimeChange(value)}
+              className="grid w-full grid-cols-4 gap-2"
+            >
+              {times.map((option) => (
+                <ToggleGroupItem
+                  key={option}
+                  value={option}
+                  className="h-12 rounded-2xl border border-white/15 bg-white/5 px-2 text-base font-semibold text-white/75 data-[state=on]:border-white data-[state=on]:bg-white data-[state=on]:text-[#050505]"
+                >
+                  {option}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </PickerGroup>
+        ) : null}
       </div>
 
       <BottomAction>
         <Button
-          className="h-16 w-full rounded-full bg-white text-lg font-bold text-[#050505] hover:bg-white/90"
+          className="h-16 w-full rounded-2xl bg-white text-lg font-bold text-[#050505] hover:bg-white/90"
           onClick={onConfirm}
         >
           Schedule
@@ -192,7 +216,7 @@ function IncomingScreen({ onArrived }: { onArrived: () => void }) {
 
       <BottomAction>
         <Button
-          className="h-16 w-full rounded-full bg-white text-lg font-bold text-[#050505] hover:bg-white/90"
+          className="h-16 w-full rounded-2xl bg-white text-lg font-bold text-[#050505] hover:bg-white/90"
           onClick={onArrived}
         >
           Robot arrived
@@ -207,7 +231,11 @@ function RobotActiveScreen({ onContinue }: { onContinue: () => void }) {
   return (
     <Screen>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 pb-5 text-center">
-        <ShieldCheck className="size-56 stroke-[1.1]" />
+        <img
+          src="/robot.png"
+          alt="Health robot"
+          className="max-h-[27rem] w-full scale-110 object-contain"
+        />
         <h1 className="m-0 text-[2.65rem] font-bold leading-none tracking-normal">
           Use the robot now
         </h1>
@@ -215,7 +243,7 @@ function RobotActiveScreen({ onContinue }: { onContinue: () => void }) {
 
       <BottomAction>
         <Button
-          className="h-16 w-full rounded-full bg-white text-lg font-bold text-[#050505] hover:bg-white/90"
+          className="h-16 w-full rounded-2xl bg-white text-lg font-bold text-[#050505] hover:bg-white/90"
           onClick={onContinue}
         >
           Continue
@@ -240,24 +268,46 @@ function OutcomeScreen({ onRestart }: { onRestart: () => void }) {
           <ResultRow icon={<Pill />} label="Medication" value="Refill pack" />
         </div>
 
-        <div className="mt-10 grid gap-1 border-t border-white/10 pt-6">
-          <strong className="text-lg font-bold text-white">
-            Order medication
-          </strong>
-          <span className="text-base font-semibold text-white/60">
-            Nearby pharmacy delivery
-          </span>
+        <div className="mt-8 grid gap-4 border-t border-white/10 pt-6">
+          <div className="grid gap-1">
+            <strong className="text-lg font-bold text-white">
+              Order medication
+            </strong>
+            <span className="text-base font-semibold text-white/60">
+              Nearby pharmacy delivery
+            </span>
+          </div>
+          <div className="grid gap-3">
+            {medications.map((medication) => (
+              <div
+                key={medication.name}
+                className="grid grid-cols-[2.4rem_1fr] gap-3"
+              >
+                <span className="text-lg font-bold text-white">
+                  {medication.dose}
+                </span>
+                <span className="grid gap-0.5">
+                  <strong className="text-base font-bold text-white">
+                    {medication.name}
+                  </strong>
+                  <span className="text-sm font-semibold text-white/55">
+                    {medication.instruction}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       <BottomAction>
-        <Button className="h-16 w-full rounded-full bg-white text-lg font-bold text-[#050505] hover:bg-white/90">
+        <Button className="h-16 w-full rounded-2xl bg-white text-lg font-bold text-[#050505] hover:bg-white/90">
           Order now
           <ArrowRight />
         </Button>
         <Button
           variant="ghost"
-          className="h-14 w-full rounded-full text-lg font-bold text-white hover:bg-white/10 hover:text-white"
+          className="h-14 w-full rounded-2xl text-lg font-bold text-white hover:bg-white/10 hover:text-white"
           onClick={onRestart}
         >
           New visit
