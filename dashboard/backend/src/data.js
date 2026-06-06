@@ -20,21 +20,21 @@ const randInt = (min, max) => Math.floor(randFloat(min, max + 1));
 const pick = (arr) => arr[randInt(0, arr.length - 1)];
 const chance = (p) => rand() < p;
 
-// Real Hong Kong coordinates (lng/lat) clustered around Victoria Harbour so the
-// fleet reads nicely on a pitched Mapbox view of the city.
+// Clustered around Central Plaza / HKCEC in Wan Chai North — supertall offices
+// mixed with residential blocks, all within ~400m.
 const BUILDINGS = [
-  { name: "Victoria Heights", district: "Central", lng: 114.1581, lat: 22.2819 },
-  { name: "Harbour Vantage", district: "Wan Chai", lng: 114.1722, lat: 22.2783 },
-  { name: "Peak Residences", district: "The Peak", lng: 114.1452, lat: 22.2713 },
-  { name: "Causeway One", district: "Causeway Bay", lng: 114.1847, lat: 22.2802 },
-  { name: "Kowloon Skyline", district: "Tsim Sha Tsui", lng: 114.1716, lat: 22.2971 },
-  { name: "Jordan Garden", district: "Jordan", lng: 114.1709, lat: 22.3051 },
-  { name: "Mong Kok Towers", district: "Mong Kok", lng: 114.1694, lat: 22.3186 },
-  { name: "North Point Plaza", district: "North Point", lng: 114.1996, lat: 22.2905 },
-  { name: "Quarry Bay Court", district: "Quarry Bay", lng: 114.2123, lat: 22.2876 },
-  { name: "Sai Ying Pun Terrace", district: "Sai Ying Pun", lng: 114.1431, lat: 22.2861 },
-  { name: "Aberdeen Marina", district: "Aberdeen", lng: 114.1553, lat: 22.2483 },
-  { name: "Hung Hom Crest", district: "Hung Hom", lng: 114.1882, lat: 22.3035 },
+  { name: "Central Plaza", district: "Wan Chai", lng: 114.1738, lat: 22.2810 },
+  { name: "Convention Plaza", district: "Wan Chai", lng: 114.1730, lat: 22.2823 },
+  { name: "Sun Hung Kai Centre", district: "Wan Chai", lng: 114.1748, lat: 22.2810 },
+  { name: "Harbour Centre", district: "Wan Chai", lng: 114.1739, lat: 22.2820 },
+  { name: "Great Eagle Centre", district: "Wan Chai", lng: 114.1728, lat: 22.2811 },
+  { name: "China Resources Building", district: "Wan Chai", lng: 114.1739, lat: 22.2795 },
+  { name: "Shui On Centre", district: "Wan Chai", lng: 114.1746, lat: 22.2789 },
+  { name: "Wan Chai Tower", district: "Wan Chai", lng: 114.1726, lat: 22.2794 },
+  { name: "Immigration Tower", district: "Wan Chai", lng: 114.1730, lat: 22.2790 },
+  { name: "Revenue Tower", district: "Wan Chai", lng: 114.1725, lat: 22.2788 },
+  { name: "Harbour Road Tower", district: "Wan Chai", lng: 114.1752, lat: 22.2818 },
+  { name: "Hopewell Centre", district: "Wan Chai", lng: 114.1718, lat: 22.2761 },
 ];
 
 const SURNAMES = ["Chan", "Wong", "Lee", "Cheung", "Lam", "Ng", "Ho", "Leung", "Tang", "Yeung", "Lau", "Tsang"];
@@ -62,13 +62,14 @@ const RECOMMENDATIONS = [
 
 const FOLLOW_UP = ["None required", "Monitoring", "Pharmacy order placed", "Doctor referral", "Urgent review"];
 
-function makeResident(buildingId, idx) {
+function makeResident(buildingId, idx, healthBias = 0) {
   const age = randInt(24, 88);
 
   // Roll a severity bucket first, then generate vitals consistent with it so
-  // the overall population skews healthy with a realistic minority at risk.
-  const roll = rand();
-  const severity = roll < 0.6 ? "low" : roll < 0.86 ? "moderate" : "high";
+  // the overall population skews strongly healthy with a small minority at risk.
+  // healthBias shifts the roll up (riskier building) or down (healthier).
+  const roll = rand() + healthBias;
+  const severity = roll < 0.8 ? "low" : roll < 0.94 ? "moderate" : "high";
 
   const ranges = {
     low: { sys: [108, 128], dia: [68, 82], hr: [60, 78], spo2: [97, 100] },
@@ -163,9 +164,12 @@ function summarize(residents) {
 
 export const buildings = BUILDINGS.map((b, i) => {
   const id = `b${i + 1}`;
-  const floors = randInt(18, 56);
-  const residentCount = randInt(8, 18);
-  const residents = Array.from({ length: residentCount }, (_, idx) => makeResident(id, idx));
+  const floors = randInt(28, 56);
+  const residentCount = randInt(460, 540);
+  // Per-building health bias so averages spread across stable/watch/alert buckets
+  // instead of all converging to the population mean at this resident count.
+  const healthBias = randFloat(-0.18, 0.22);
+  const residents = Array.from({ length: residentCount }, (_, idx) => makeResident(id, idx, healthBias));
   const community = summarize(residents);
 
   // Derive a single building-level status used to colour the 3D tower.

@@ -3,7 +3,6 @@ import MapView from "./components/MapView.jsx";
 import MapFallback from "./components/MapFallback.jsx";
 import TopBar from "./components/TopBar.jsx";
 import SidePanel from "./components/SidePanel.jsx";
-import MapLegend from "./components/MapLegend.jsx";
 import { fetchNetwork, fetchBuildings, fetchBuilding } from "./api.js";
 
 const MAPBOX_TOKEN = import.meta.env.mapbox_key;
@@ -15,7 +14,6 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [panelLoading, setPanelLoading] = useState(false);
-  const [hovered, setHovered] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -63,7 +61,6 @@ export default function App() {
       </div>
 
       <TopBar network={network} />
-      <MapLegend hovered={hovered} liveMap={HAS_TOKEN} />
       <SidePanel building={selectedBuilding} loading={panelLoading} onClose={handleClose} />
 
       {!buildings.length && !error && (

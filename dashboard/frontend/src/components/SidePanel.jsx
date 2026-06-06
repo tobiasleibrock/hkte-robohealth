@@ -100,11 +100,11 @@ export default function SidePanel({ building, loading, onClose }) {
       {open && (
         <motion.aside
           key="panel"
-          initial={{ x: 460, opacity: 0 }}
+          initial={{ x: "100%", opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: 460, opacity: 0 }}
+          exit={{ x: "100%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
-          className="absolute right-0 top-0 z-30 flex h-full w-[420px] max-w-[92vw] flex-col border-l border-white/[0.07] bg-[#080b12]/85 backdrop-blur-xl"
+          className="absolute right-0 top-0 z-30 flex h-full w-[42vw] min-w-[420px] max-w-[640px] flex-col border-l border-white/[0.07] bg-[#080b12]/85 backdrop-blur-xl"
         >
           {loading && !building ? (
             <div className="flex h-full items-center justify-center">

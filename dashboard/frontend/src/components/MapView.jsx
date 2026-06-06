@@ -1,23 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, NavigationControl } from "react-map-gl/mapbox";
 import MapMarker from "./MapMarker.jsx";
-import { STATUS_COLORS } from "../api.js";
 
 const MAPBOX_TOKEN = import.meta.env.mapbox_key;
 
 const BUILDING_MIN_ZOOM = 11;
 const BUILDING_FADE_END_ZOOM = 13;
 
+// Panning the map smoothly eases the pitch toward PITCH_PAN.
+// flyTo (building focus) lands at 30° (handled inline below).
+const PITCH_PAN = 55;
+const PITCH_EASE_MS = 800;
+// The side panel occupies the right ~42% of the viewport; offset the flyTo
+// target so the building lands centered in the remaining map area.
+const PANEL_FRACTION = 0.42;
+
 const INITIAL_VIEW = {
-  longitude: 114.16,
-  latitude: 22.282,
-  zoom: 15.0,
-  pitch: 56,
+  longitude: 114.1735,
+  latitude: 22.2800,
+  zoom: 16.2,
+  pitch: PITCH_PAN,
   bearing: -28,
 };
 
-// Grey skyline by default; operated buildings get their status colour applied via
-// feature-state once we've matched each fleet point to a rendered polygon.
 const buildingLayer = {
   id: "hk-3d-buildings",
   type: "fill-extrusion",
@@ -27,26 +32,17 @@ const buildingLayer = {
   filter: ["==", ["get", "extrude"], "true"],
   paint: {
     "fill-extrusion-color": [
-      "case",
-      ["==", ["feature-state", "status"], "stable"],
-      STATUS_COLORS.stable,
-      ["==", ["feature-state", "status"], "watch"],
-      STATUS_COLORS.watch,
-      ["==", ["feature-state", "status"], "alert"],
-      STATUS_COLORS.alert,
-      [
-        "interpolate",
-        ["linear"],
-        ["get", "height"],
-        0,
-        "#2a2f3a",
-        60,
-        "#454a55",
-        160,
-        "#646a76",
-        320,
-        "#8b919c",
-      ],
+      "interpolate",
+      ["linear"],
+      ["get", "height"],
+      0,
+      "#2a2f3a",
+      60,
+      "#454a55",
+      160,
+      "#646a76",
+      320,
+      "#8b919c",
     ],
     "fill-extrusion-height": [
       "interpolate",
@@ -64,13 +60,11 @@ const buildingLayer = {
 
 export default function MapView({ buildings, selectedId, onSelect }) {
   const mapRef = useRef(null);
+  const flyingRef = useRef(false);
   const [labelLayerId, setLabelLayerId] = useState(undefined);
-  const [zoom, setZoom] = useState(INITIAL_VIEW.zoom);
-  const [taggedIds, setTaggedIds] = useState(() => new Set());
 
   const handleLoad = useCallback((e) => {
     const map = e.target;
-    // Place the extrusion layer beneath the first text label for a clean look.
     const layers = map.getStyle().layers || [];
     const symbol = layers.find((l) => l.type === "symbol" && l.layout?.["text-field"]);
     setLabelLayerId(symbol?.id);
@@ -85,66 +79,49 @@ export default function MapView({ buildings, selectedId, onSelect }) {
     });
   }, []);
 
-  // Match each operated building to the nearest rendered polygon and paint it
-  // via feature-state. Re-runs on `idle` because tile loads can introduce new
-  // features that need the same treatment.
-  useEffect(() => {
+  // Each pan gesture eases pitch + zoom back to the initial overview and drops
+  // any active selection. Skipped while a flyTo is in flight.
+  const handleDragEnd = useCallback((e) => {
+    if (flyingRef.current) return;
+    if (e.originalEvent == null) return;
     const map = mapRef.current?.getMap?.();
     if (!map) return;
+    const needsPitch = Math.abs(map.getPitch() - PITCH_PAN) > 0.5;
+    const needsZoom = Math.abs(map.getZoom() - INITIAL_VIEW.zoom) > 0.05;
+    if (needsPitch || needsZoom) {
+      map.easeTo({ pitch: PITCH_PAN, zoom: INITIAL_VIEW.zoom, duration: PITCH_EASE_MS });
+    }
+    onSelect?.(null);
+  }, [onSelect]);
 
-    const apply = () => {
-      if (!map.isStyleLoaded()) return;
-      let next = null;
-      for (const b of buildings) {
-        const pixel = map.project([b.position.lng, b.position.lat]);
-        const bbox = [
-          [pixel.x - 6, pixel.y - 6],
-          [pixel.x + 6, pixel.y + 6],
-        ];
-        const feats = map.queryRenderedFeatures(bbox, { layers: ["hk-3d-buildings"] });
-        if (!feats.length) continue;
-        const feat = feats[0];
-        if (feat.id == null) continue;
-        map.setFeatureState(
-          { source: "composite", sourceLayer: "building", id: feat.id },
-          { status: b.status }
-        );
-        if (!taggedIds.has(b.id)) {
-          if (!next) next = new Set(taggedIds);
-          next.add(b.id);
-        }
-      }
-      if (next) setTaggedIds(next);
-    };
-
-    map.on("idle", apply);
-    apply();
-    return () => {
-      map.off("idle", apply);
-    };
-  }, [buildings, taggedIds]);
-
-  const handleZoom = useCallback((e) => {
-    setZoom(e.viewState.zoom);
-  }, []);
-
-  // Smoothly focus the selected building.
+  // Smoothly focus the selected building, holding a gentle 30° pitch on arrival.
   useEffect(() => {
     if (!selectedId) return;
     const b = buildings.find((x) => x.id === selectedId);
-    if (b && mapRef.current) {
-      mapRef.current.flyTo({
-        center: [b.position.lng, b.position.lat],
-        zoom: 15.2,
-        pitch: 58,
-        duration: 1500,
-        offset: [-200, 30],
-        essential: true,
-      });
-    }
+    const map = mapRef.current?.getMap?.();
+    if (!b || !map) return;
+    flyingRef.current = true;
+    const clear = () => {
+      flyingRef.current = false;
+      map.off("moveend", clear);
+    };
+    map.on("moveend", clear);
+    // Visible map area is the left (1 - PANEL_FRACTION) of the viewport.
+    // Its centre sits at -PANEL_FRACTION/2 of the viewport width from the map centre.
+    const w = map.getContainer().clientWidth;
+    const offsetX = -(PANEL_FRACTION / 2) * w;
+    map.flyTo({
+      center: [b.position.lng, b.position.lat],
+      zoom: 16.2,
+      pitch: 30,
+      duration: 1500,
+      offset: [offsetX, 30],
+      essential: true,
+    });
+    return () => {
+      map.off("moveend", clear);
+    };
   }, [selectedId, buildings]);
-
-  const buildingsRenderedIn = zoom >= BUILDING_FADE_END_ZOOM;
 
   return (
     <Map
@@ -156,20 +133,15 @@ export default function MapView({ buildings, selectedId, onSelect }) {
       antialias
       maxPitch={70}
       onLoad={handleLoad}
-      onZoom={handleZoom}
+      onDragEnd={handleDragEnd}
       onClick={() => onSelect?.(null)}
       attributionControl={false}
     >
       <Layer {...buildingLayer} beforeId={labelLayerId} />
 
-      {buildings.map((b) => {
-        // Hide the dot only once the 3D footprint is both faded in AND coloured
-        // for this building; otherwise keep the marker as the visible cue.
-        if (buildingsRenderedIn && taggedIds.has(b.id)) return null;
-        return (
-          <MapMarker key={b.id} building={b} selected={selectedId === b.id} onSelect={onSelect} />
-        );
-      })}
+      {buildings.map((b) => (
+        <MapMarker key={b.id} building={b} selected={selectedId === b.id} onSelect={onSelect} />
+      ))}
 
       <NavigationControl position="bottom-right" showCompass={false} visualizePitch={false} />
     </Map>
