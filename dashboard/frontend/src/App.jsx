@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import MapView from "./components/MapView.jsx";
 import MapFallback from "./components/MapFallback.jsx";
-import TopBar from "./components/TopBar.jsx";
+import LeftPanel from "./components/LeftPanel.jsx";
 import SidePanel from "./components/SidePanel.jsx";
 import { fetchNetwork, fetchBuildings, fetchBuilding } from "./api.js";
 
@@ -60,7 +60,7 @@ export default function App() {
           ))}
       </div>
 
-      <TopBar network={network} />
+      <LeftPanel network={network} />
       <SidePanel building={selectedBuilding} loading={panelLoading} onClose={handleClose} />
 
       {!buildings.length && !error && (

@@ -15,7 +15,8 @@ function BigStat({ label, value, suffix, accent }) {
   );
 }
 
-function RiskBar({ tag, count, max }) {
+
+function SymptomBar({ tag, count, max }) {
   const pct = Math.round((count / max) * 100);
   return (
     <div>
@@ -36,7 +37,14 @@ function RiskBar({ tag, count, max }) {
 }
 
 function CommunityView({ c }) {
-  const maxRisk = Math.max(...c.commonRisks.map((r) => r.count), 1);
+  const maxSymptom = Math.max(...c.commonRisks.map((r) => r.count), 1);
+  const healthScore = Math.max(
+    0,
+    Math.min(100, Math.round(100 - c.followUpPct * 0.4 - (c.highRiskCount / Math.max(c.activeUsers, 1)) * 60))
+  );
+  const scoreColor = healthScore >= 75 ? "#36e2c4" : healthScore >= 50 ? "#f5c451" : "#ff5d73";
+  const avoidsVisits = Math.round(c.completedChecks * 0.18);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2.5">
@@ -46,35 +54,53 @@ function CommunityView({ c }) {
         <BigStat label="High Risk" value={c.highRiskCount} accent="#ff5d73" />
       </div>
 
-      <div>
-        <div className="label mb-2">Average Vitals</div>
-        <div className="grid grid-cols-3 gap-2.5">
-          <div className="rounded-xl glass-soft px-3 py-2.5">
-            <div className="font-mono text-lg font-semibold text-white">{c.avgSystolic}/{c.avgDiastolic}</div>
-            <div className="text-[10px] text-slate-500">mmHg · blood pressure</div>
-          </div>
-          <div className="rounded-xl glass-soft px-3 py-2.5">
-            <div className="font-mono text-lg font-semibold text-white">{c.avgHeartRate}</div>
-            <div className="text-[10px] text-slate-500">bpm · heart rate</div>
-          </div>
-          <div className="rounded-xl glass-soft px-3 py-2.5">
-            <div className="font-mono text-lg font-semibold text-white">{c.avgSpo2}%</div>
-            <div className="text-[10px] text-slate-500">SpO₂ · oxygen</div>
+      {/* Community Health Score */}
+      <div className="rounded-xl glass-soft px-3.5 py-3">
+        <div className="label mb-2">Community Health Score</div>
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-3xl font-semibold" style={{ color: scoreColor }}>
+            {healthScore}
+          </span>
+          <div className="flex-1">
+            <div className="h-2 overflow-hidden rounded-full bg-base-800">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: scoreColor }}
+                initial={{ width: 0 }}
+                animate={{ width: `${healthScore}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              />
+            </div>
+            <div className="mt-1 text-[10px] text-slate-600">aus 100 · basierend auf Follow-up & Risikowerten</div>
           </div>
         </div>
       </div>
 
+      {/* Top Symptoms */}
       <div>
-        <div className="label mb-2.5">Common Risk Patterns</div>
+        <div className="label mb-2.5">Häufigste Symptome</div>
         <div className="space-y-2.5 rounded-xl glass-soft px-3.5 py-3">
           {c.commonRisks.length ? (
-            c.commonRisks.map((r) => <RiskBar key={r.tag} tag={r.tag} count={r.count} max={maxRisk} />)
+            c.commonRisks.map((r) => (
+              <SymptomBar key={r.tag} tag={r.tag} count={r.count} max={maxSymptom} />
+            ))
           ) : (
-            <p className="text-[12px] text-slate-500">No notable risk clusters detected.</p>
+            <p className="text-[12px] text-slate-500">Keine auffälligen Symptome erkannt.</p>
           )}
         </div>
       </div>
 
+      {/* Avoided doctor visits */}
+      <div className="rounded-xl glass-soft px-3.5 py-3">
+        <div className="label mb-1">Arztbesuche vermieden</div>
+        <div className="mt-1 flex items-end gap-2">
+          <span className="font-mono text-3xl font-semibold text-accent">{avoidsVisits.toLocaleString()}</span>
+          <span className="mb-1 text-xs text-slate-500">Konsultationen</span>
+        </div>
+        <div className="mt-1 text-[10px] text-slate-600">geschätzt aus Früherkennungsrate × Checks</div>
+      </div>
+
+      {/* Alerts */}
       <div>
         <div className="label mb-2">Community Alerts</div>
         <div className="space-y-2">

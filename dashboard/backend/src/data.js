@@ -23,18 +23,16 @@ const chance = (p) => rand() < p;
 // Clustered around Central Plaza / HKCEC in Wan Chai North — supertall offices
 // mixed with residential blocks, all within ~400m.
 const BUILDINGS = [
-  { name: "Central Plaza", district: "Wan Chai", lng: 114.1738, lat: 22.2810 },
-  { name: "Convention Plaza", district: "Wan Chai", lng: 114.1730, lat: 22.2823 },
-  { name: "Sun Hung Kai Centre", district: "Wan Chai", lng: 114.1748, lat: 22.2810 },
-  { name: "Harbour Centre", district: "Wan Chai", lng: 114.1739, lat: 22.2820 },
-  { name: "Great Eagle Centre", district: "Wan Chai", lng: 114.1728, lat: 22.2811 },
-  { name: "China Resources Building", district: "Wan Chai", lng: 114.1739, lat: 22.2795 },
-  { name: "Shui On Centre", district: "Wan Chai", lng: 114.1746, lat: 22.2789 },
-  { name: "Wan Chai Tower", district: "Wan Chai", lng: 114.1726, lat: 22.2794 },
-  { name: "Immigration Tower", district: "Wan Chai", lng: 114.1730, lat: 22.2790 },
-  { name: "Revenue Tower", district: "Wan Chai", lng: 114.1725, lat: 22.2788 },
-  { name: "Harbour Road Tower", district: "Wan Chai", lng: 114.1752, lat: 22.2818 },
-  { name: "Hopewell Centre", district: "Wan Chai", lng: 114.1718, lat: 22.2761 },
+  { name: "Central Plaza", district: "Wan Chai", lng: 114.1738, lat: 22.2810, mapboxFeatureIds: [1047690917, 1047690916, 1047690915, 1047690912, 1047690911, 1047690913, 1047690918] },
+  { name: "Convention Plaza", district: "Wan Chai", lng: 114.1730, lat: 22.2823, mapboxFeatureIds: [1324261693, 107497692, 1324261692] },
+  { name: "Sun Hung Kai Centre", district: "Wan Chai", lng: 114.1748, lat: 22.2810, mapboxFeatureIds: [1326229742, 1326229741, 1326229740, 1326229739, 1326229738] },
+  { name: "Great Eagle Centre", district: "Wan Chai", lng: 114.1728, lat: 22.2811, mapboxFeatureIds: [40491153, 1326229650, 1326229655, 1326229648, 1326229661, 1326229651, 40491170, 1326229653, 1326229654, 1326229652, 1326229662, 1326229675, 1326229663, 1326229667, 1326229666, 1326229676, 1326229672, 1326229673, 1326229671, 1326229677, 40491165, 1326229665, 1326229664, 1326229674, 1326229670, 1326229669, 1326229668, 1326229660, 1326229656, 1326229649, 1326229659, 1326229658, 1326229657] },
+  { name: "China Resources Building", district: "Wan Chai", lng: 114.1739, lat: 22.2795, mapboxFeatureIds: [1326229735, 1326229732, 1326229731, 1326229730, 1326229729, 1326229728, 1326229727, 1326229726, 1326229725, 1326229724, 1326229722, 1326229723, 1326229721, 1326229720, 1326229719, 1326229718, 1326229717, 1326229736, 1326229688, 1326229687, 1326229686, 1326229685, 1326229683, 1326229684, 1326229682, 1326229681, 1326229680, 1326229679, 1326229678, 1326229733, 1326229716, 1326229715, 1326229714, 1326229713, 1326229712, 1326229737, 1326229711, 1326229701, 1326229702, 1326229703, 1326229704, 1326229705, 1326229706, 1326229707, 1326229708, 1326229709, 1326229710, 1326229700, 1326229734, 1326229699, 1326229698, 1326229697, 1326229696, 1326229695, 1326229689, 1326229694, 1326229693, 1326229690, 1326229692, 1326229691] },
+  { name: "Shui On Centre", district: "Wan Chai", lng: 114.1746, lat: 22.2789, mapboxFeatureIds: [241998997] },
+  { name: "Wan Chai Tower", district: "Wan Chai", lng: 114.1726, lat: 22.2794, mapboxFeatureIds: [27087041] },
+  { name: "Immigration Tower", district: "Wan Chai", lng: 114.1730, lat: 22.2790, mapboxFeatureIds: [510722228] },
+  { name: "Revenue Tower", district: "Wan Chai", lng: 114.1725, lat: 22.2788, mapboxFeatureIds: [27087037] },
+  { name: "Hopewell Centre", district: "Wan Chai", lng: 114.1718, lat: 22.2761, mapboxFeatureIds: [1381061198, 88391069] },
 ];
 
 const SURNAMES = ["Chan", "Wong", "Lee", "Cheung", "Lam", "Ng", "Ho", "Leung", "Tang", "Yeung", "Lau", "Tsang"];
@@ -104,6 +102,44 @@ function makeResident(buildingId, idx, healthBias = 0) {
     };
   });
 
+  // --- Diabetes panel ---
+  const ageFactor = Math.max(0, (age - 45) / 45);
+  const diabetesRoll = rand() + ageFactor * 0.25 + (severity === "high" ? 0.2 : severity === "moderate" ? 0.1 : 0);
+  const hba1c =
+    diabetesRoll > 0.85
+      ? Number(randFloat(6.5, 9.8).toFixed(1))
+      : diabetesRoll > 0.6
+      ? Number(randFloat(5.7, 6.4).toFixed(1))
+      : Number(randFloat(4.5, 5.6).toFixed(1));
+  const fastingGlucose =
+    hba1c >= 6.5 ? randInt(126, 210) : hba1c >= 5.7 ? randInt(100, 125) : randInt(70, 99);
+  const timeInRange =
+    hba1c >= 6.5 ? randInt(40, 72) : hba1c >= 5.7 ? randInt(68, 86) : randInt(85, 98);
+  const diabetesStatus =
+    hba1c >= 6.5 ? "Diabetisch" : hba1c >= 5.7 ? "Prä-Diabetisch" : "Normal";
+
+  // --- Dementia / cognitive panel ---
+  const cogAgeFactor = Math.max(0, (age - 60) / 30);
+  const mciProb = Math.min(0.96, rand() * 0.35 + cogAgeFactor * 0.55);
+  const mciStatus =
+    mciProb >= 0.5 ? "Auffällig" : mciProb >= 0.25 ? "Grenzwertig" : "Normal";
+  const walkingSpeed = Number(
+    Math.max(0.3, 1.5 - cogAgeFactor * 0.55 + (rand() - 0.5) * 0.3).toFixed(2)
+  );
+  const frailtyIndex = Number(Math.min(0.95, cogAgeFactor * 0.45 + rand() * 0.3).toFixed(2));
+  const frailtyStatus =
+    frailtyIndex > 0.35 ? "Frail" : frailtyIndex > 0.12 ? "Prä-Frail" : "Robust";
+  const hyposmiaScore = randInt(0, 3);
+
+  // --- Body composition (BIA) ---
+  const bodyFat = Number(randFloat(14, 38).toFixed(1));
+  const muscleMass = Number(randFloat(26, 46).toFixed(1));
+  const waterPct = Number(randFloat(45, 65).toFixed(1));
+  const visceralFat = randInt(2, 18);
+
+  // --- HRV / Stress ---
+  const stressIndex = Number(randFloat(1.2, 9.4).toFixed(1));
+
   return {
     id: `${buildingId}-r${idx}`,
     name: `${pick(SURNAMES)} ${pick(GIVEN)}`,
@@ -111,7 +147,14 @@ function makeResident(buildingId, idx, healthBias = 0) {
     unit: `${randInt(3, 42)}/${pick(["A", "B", "C", "D", "E", "F"])}`,
     lastCheck: `2026-0${randInt(1, 6)}-${String(randInt(10, 28)).padStart(2, "0")}`,
     totalChecks: checks,
-    vitals: { systolic, diastolic, heartRate, spo2, temperature: Number(randFloat(36.1, 37.6).toFixed(1)) },
+    vitals: {
+      systolic,
+      diastolic,
+      heartRate,
+      spo2,
+      temperature: Number(randFloat(36.1, 37.6).toFixed(1)),
+      stressIndex,
+    },
     history,
     risks: uniqueRisks,
     severity,
@@ -120,8 +163,11 @@ function makeResident(buildingId, idx, healthBias = 0) {
       severity === "high"
         ? pick(["Doctor referral", "Urgent review"])
         : severity === "moderate"
-          ? pick(["Monitoring", "Pharmacy order placed", "None required"])
-          : "None required",
+        ? pick(["Monitoring", "Pharmacy order placed", "None required"])
+        : "None required",
+    diabetes: { hba1c, fastingGlucose, timeInRange, status: diabetesStatus },
+    dementia: { mciProb: Number(mciProb.toFixed(2)), mciStatus, walkingSpeed, frailtyIndex, frailtyStatus, hyposmiaScore },
+    bodyComposition: { bodyFat, muscleMass, waterPct, visceralFat },
   };
 }
 
@@ -190,6 +236,7 @@ export const buildings = BUILDINGS.map((b, i) => {
     height: Number((floors * 0.18 + randFloat(0.5, 2)).toFixed(2)),
     robotActive: chance(0.85),
     status,
+    mapboxFeatureIds: b.mapboxFeatureIds ?? [],
     community,
     residents,
   };
@@ -205,6 +252,7 @@ export const buildingsSummary = buildings.map((b) => ({
   height: b.height,
   robotActive: b.robotActive,
   status: b.status,
+  mapboxFeatureIds: b.mapboxFeatureIds,
   activeUsers: b.community.activeUsers,
 }));
 
