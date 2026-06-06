@@ -1,3 +1,7 @@
+## Testing Policy
+
+Do not run tests, builds, browser checks, visual verification, route generation, or dev servers unless the user explicitly asks for them in the current turn. The user owns verification for this app; agent work should focus on implementation only.
+
 <!-- intent-skills:start -->
 # Skill mappings - load `use` with `npx @tanstack/intent@latest load <use>`.
 skills:
