@@ -56,7 +56,7 @@ function LandingPage() {
         ) : null}
 
         {step === 'incoming' ? (
-          <IncomingScreen onArrived={() => setStep('locked')} />
+          <IncomingScreen onComplete={() => setStep('locked')} />
         ) : null}
 
         {step === 'locked' ? (
@@ -90,24 +90,20 @@ function OrderScreen({
     <Screen>
       <div className="flex min-h-0 flex-1 flex-col pb-3">
         <h1 className="m-0 pt-2 text-center text-2xl font-bold tracking-normal">
-          Choose robot
+          Order robot
         </h1>
 
-        <div className="grid min-h-0 flex-1 place-items-center py-2">
+        <div
+          className={[
+            'grid min-h-0 place-items-center py-2 transition-[height]',
+            isNow ? 'h-[calc(100%-8.5rem)]' : 'h-[calc(100%-14.5rem)]',
+          ].join(' ')}
+        >
           <img
             src="/robot.png"
             alt="Health robot"
             className="max-h-[27rem] w-full scale-110 object-contain"
           />
-        </div>
-
-        <div className="mb-4 grid gap-2 text-center">
-          <h2 className="m-0 text-[1.9rem] font-bold leading-none tracking-normal">
-            Health Robot
-          </h2>
-          <p className="mx-auto mb-0 mt-0 max-w-80 text-base leading-snug text-white/55">
-            Comes to your apartment for basic checks.
-          </p>
         </div>
 
         <PickerGroup label="Day">
@@ -164,19 +160,31 @@ function OrderScreen({
   )
 }
 
-function IncomingScreen({ onArrived }: { onArrived: () => void }) {
-  const [secondsLeft, setSecondsLeft] = useState(() => 90)
+function IncomingScreen({ onComplete }: { onComplete: () => void }) {
+  const [secondsLeft, setSecondsLeft] = useState(() => 10)
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setSecondsLeft((current) => Math.max(0, current - 1))
+      setSecondsLeft((current) => {
+        if (current <= 1) {
+          window.clearInterval(interval)
+          onComplete()
+          return 0
+        }
+
+        return current - 1
+      })
     }, 1000)
 
     return () => window.clearInterval(interval)
-  }, [])
+  }, [onComplete])
 
   const minutes = Math.floor(secondsLeft / 60)
   const seconds = String(secondsLeft % 60).padStart(2, '0')
+  const completedSteps = Math.min(
+    routeStops.length,
+    Math.ceil(((10 - secondsLeft) / 10) * routeStops.length),
+  )
 
   return (
     <Screen>
@@ -202,27 +210,22 @@ function IncomingScreen({ onArrived }: { onArrived: () => void }) {
               <span
                 className={[
                   'z-10 mt-0.5 size-4 rounded-full border border-white/45 bg-[#050505]',
-                  index < 3 ? 'bg-white' : '',
+                  index < completedSteps ? 'bg-white' : '',
                 ].join(' ')}
               />
               {index < routeStops.length - 1 ? (
-                <span className="absolute bottom-0 left-[0.45rem] top-5 w-px bg-white/20" />
+                <span
+                  className={[
+                    'absolute bottom-0 left-[0.45rem] top-5 w-px',
+                    index < completedSteps - 1 ? 'bg-white' : 'bg-white/20',
+                  ].join(' ')}
+                />
               ) : null}
               <span>{stop}</span>
             </div>
           ))}
         </div>
       </div>
-
-      <BottomAction>
-        <Button
-          className="h-16 w-full rounded-2xl bg-white text-lg font-bold text-[#050505] hover:bg-white/90"
-          onClick={onArrived}
-        >
-          Robot arrived
-          <ArrowRight />
-        </Button>
-      </BottomAction>
     </Screen>
   )
 }
@@ -237,7 +240,7 @@ function RobotActiveScreen({ onContinue }: { onContinue: () => void }) {
           className="max-h-[27rem] w-full scale-110 object-contain"
         />
         <h1 className="m-0 text-[2.65rem] font-bold leading-none tracking-normal">
-          Use the robot now
+          I arrived, talk to me!
         </h1>
       </div>
 
