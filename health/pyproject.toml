@@ -1,0 +1,26 @@
+[project]
+name = "health"
+version = "0.1.0"
+description = "Video-based health screening analysis for the HK HealthBot prototype"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.3.0",
+    "opencv-contrib-python>=4.11.0.86",
+    "scipy>=1.16.0",
+]
+
+[project.optional-dependencies]
+pose = [
+    "mediapipe>=0.10.21",
+]
+
+[project.scripts]
+vision-analysis = "vision_analysis:main"
+urine-analysis = "urine_analysis:main"
+
+[build-system]
+requires = ["setuptools>=80.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["vision_analysis", "urine_analysis"]
