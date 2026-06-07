@@ -12,23 +12,23 @@ export default {
           500: "#1e2740",
         },
         accent: {
-          DEFAULT: "#36e2c4",
-          glow: "#5cf0d6",
-          deep: "#0fb89a",
+          DEFAULT: "#10b981",
+          light: "#d1fae5",
+          dark: "#059669",
         },
         signal: {
-          stable: "#36e2c4",
-          watch: "#f5c451",
-          alert: "#ff5d73",
+          stable: "#10b981",
+          watch: "#f59e0b",
+          alert: "#ef4444",
         },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
+        mono: ["'DM Mono'", "ui-monospace", "monospace"],
       },
       boxShadow: {
-        glow: "0 0 30px -5px rgba(54, 226, 196, 0.35)",
-        panel: "0 24px 60px -20px rgba(0, 0, 0, 0.7)",
+        glow: "0 0 20px -4px rgba(16, 185, 129, 0.3)",
+        panel: "0 8px 40px -8px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.06)",
       },
       keyframes: {
         "pulse-ring": {

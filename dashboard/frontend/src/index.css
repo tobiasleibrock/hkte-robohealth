@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
-}
-
 html,
 body,
 #root {
@@ -15,60 +11,58 @@ body,
 
 body {
   background: #05070d;
-  color: #e8edf6;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
 
-/* Subtle custom scrollbar for the side panel */
 .scroll-area {
   scrollbar-width: thin;
-  scrollbar-color: rgba(54, 226, 196, 0.35) transparent;
+  scrollbar-color: rgba(16, 185, 129, 0.25) transparent;
 }
 .scroll-area::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 .scroll-area::-webkit-scrollbar-thumb {
-  background: rgba(54, 226, 196, 0.3);
+  background: rgba(16, 185, 129, 0.2);
   border-radius: 9999px;
 }
 .scroll-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(54, 226, 196, 0.55);
+  background: rgba(16, 185, 129, 0.4);
 }
 
 @layer components {
-  /* Minimal frosted surface: low-opacity fill, hairline border, soft blur. */
   .glass {
-    background: rgba(12, 16, 24, 0.66);
-    backdrop-filter: blur(16px) saturate(120%);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(0, 0, 0, 0.07);
   }
-  .glass-soft {
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+  .panel-card {
+    @apply rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-3;
   }
   .label {
-    @apply text-[10px] uppercase tracking-[0.16em] text-white/40 font-medium;
+    @apply text-[10px] uppercase tracking-[0.15em] text-gray-400 font-medium;
   }
   .hairline {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.1);
   }
 }
 
-/* Tame Mapbox's default control chrome to match the minimal theme */
+/* Mapbox controls — light style */
 .mapboxgl-ctrl-group {
-  background: rgba(12, 16, 24, 0.7) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
   border-radius: 10px !important;
   overflow: hidden;
   backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 .mapboxgl-ctrl-group button + button {
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 .mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
-  filter: invert(1) opacity(0.7);
+  filter: none;
 }
 .mapboxgl-ctrl-bottom-right {
   margin: 0 12px 16px 0;

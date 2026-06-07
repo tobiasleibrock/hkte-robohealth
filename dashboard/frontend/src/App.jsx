@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import MapView from "./components/MapView.jsx";
 import MapFallback from "./components/MapFallback.jsx";
-import LeftPanel from "./components/LeftPanel.jsx";
+import StatsPanel from "./components/LeftPanel.jsx";
 import SidePanel from "./components/SidePanel.jsx";
 import { fetchNetwork, fetchBuildings, fetchBuilding } from "./api.js";
 
@@ -44,8 +44,10 @@ export default function App() {
     setSelectedBuilding(null);
   }, []);
 
+  const sidePanelOpen = Boolean(selectedBuilding) || panelLoading;
+
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#06070b]">
+    <div className="relative h-full w-full overflow-hidden bg-[#05070d]">
       <div className="absolute inset-0">
         {buildings.length > 0 &&
           (HAS_TOKEN ? (
@@ -60,7 +62,7 @@ export default function App() {
           ))}
       </div>
 
-      <LeftPanel network={network} />
+      <StatsPanel network={network} hidden={sidePanelOpen} />
       <SidePanel building={selectedBuilding} loading={panelLoading} onClose={handleClose} />
 
       {!buildings.length && !error && (
@@ -72,10 +74,10 @@ export default function App() {
 
       {error && (
         <div className="absolute inset-0 z-40 flex items-center justify-center">
-          <div className="max-w-sm rounded-2xl glass px-6 py-5 text-center">
-            <p className="mb-1 font-medium text-signal-alert">Connection error</p>
-            <p className="text-sm text-white/50">{error}</p>
-            <p className="mt-3 text-[12px] text-white/40">Make sure the backend is running on port 4000.</p>
+          <div className="max-w-sm rounded-2xl bg-white/90 backdrop-blur border border-gray-200 px-6 py-5 text-center shadow-panel">
+            <p className="mb-1 font-medium text-red-500">Connection error</p>
+            <p className="text-sm text-gray-500">{error}</p>
+            <p className="mt-3 text-[12px] text-gray-400">Make sure the backend is running on port 4000.</p>
           </div>
         </div>
       )}

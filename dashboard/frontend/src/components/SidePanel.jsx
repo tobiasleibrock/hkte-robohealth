@@ -1,32 +1,34 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ResidentCard from "./ResidentCard.jsx";
-import { STATUS_COLORS, STATUS_LABELS } from "../api.js";
+import { STATUS_COLORS } from "../api.js";
+
+const ACCENT = "#10b981";
 
 function BigStat({ label, value, suffix, accent }) {
   return (
-    <div className="rounded-xl glass-soft px-3 py-2.5">
+    <div className="rounded-xl bg-gray-50 border border-gray-100 px-3 py-2.5">
       <div className="label">{label}</div>
-      <div className="font-mono text-2xl font-semibold leading-tight" style={{ color: accent || "#fff" }}>
+      <div className="font-mono text-2xl font-semibold leading-tight text-gray-900" style={accent ? { color: accent } : {}}>
         {value}
-        {suffix && <span className="ml-0.5 text-xs font-normal text-slate-400">{suffix}</span>}
+        {suffix && <span className="ml-0.5 text-xs font-normal text-gray-400">{suffix}</span>}
       </div>
     </div>
   );
 }
-
 
 function SymptomBar({ tag, count, max }) {
   const pct = Math.round((count / max) * 100);
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-[11px]">
-        <span className="text-slate-300">{tag}</span>
-        <span className="font-mono text-slate-500">{count}</span>
+        <span className="text-gray-700">{tag}</span>
+        <span className="font-mono text-gray-400">{count}</span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-base-800">
+      <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-accent-deep to-accent-glow"
+          className="h-full rounded-full"
+          style={{ background: ACCENT }}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -42,27 +44,27 @@ function CommunityView({ c }) {
     0,
     Math.min(100, Math.round(100 - c.followUpPct * 0.4 - (c.highRiskCount / Math.max(c.activeUsers, 1)) * 60))
   );
-  const scoreColor = healthScore >= 75 ? "#36e2c4" : healthScore >= 50 ? "#f5c451" : "#ff5d73";
+  const scoreColor = healthScore >= 75 ? "#10b981" : healthScore >= 50 ? "#f59e0b" : "#ef4444";
   const avoidsVisits = Math.round(c.completedChecks * 0.18);
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2.5">
-        <BigStat label="Active Users" value={c.activeUsers} accent="#5cf0d6" />
+        <BigStat label="Active Users" value={c.activeUsers} />
         <BigStat label="Completed Checks" value={c.completedChecks} />
-        <BigStat label="Follow-up Needed" value={c.followUpPct} suffix="%" accent="#f5c451" />
-        <BigStat label="High Risk" value={c.highRiskCount} accent="#ff5d73" />
+        <BigStat label="Follow-up Needed" value={c.followUpPct} suffix="%" accent="#f59e0b" />
+        <BigStat label="High Risk" value={c.highRiskCount} accent="#ef4444" />
       </div>
 
       {/* Community Health Score */}
-      <div className="rounded-xl glass-soft px-3.5 py-3">
+      <div className="rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-3">
         <div className="label mb-2">Community Health Score</div>
         <div className="flex items-center gap-3">
           <span className="font-mono text-3xl font-semibold" style={{ color: scoreColor }}>
             {healthScore}
           </span>
           <div className="flex-1">
-            <div className="h-2 overflow-hidden rounded-full bg-base-800">
+            <div className="h-2 overflow-hidden rounded-full bg-gray-100">
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: scoreColor }}
@@ -71,33 +73,35 @@ function CommunityView({ c }) {
                 transition={{ duration: 0.8, ease: "easeOut" }}
               />
             </div>
-            <div className="mt-1 text-[10px] text-slate-600">aus 100 · basierend auf Follow-up & Risikowerten</div>
+            <div className="mt-1 text-[10px] text-gray-400">out of 100 · based on follow-up & risk scores</div>
           </div>
         </div>
       </div>
 
       {/* Top Symptoms */}
       <div>
-        <div className="label mb-2.5">Häufigste Symptome</div>
-        <div className="space-y-2.5 rounded-xl glass-soft px-3.5 py-3">
+        <div className="label mb-2.5">Top Symptoms</div>
+        <div className="space-y-2.5 rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-3">
           {c.commonRisks.length ? (
             c.commonRisks.map((r) => (
               <SymptomBar key={r.tag} tag={r.tag} count={r.count} max={maxSymptom} />
             ))
           ) : (
-            <p className="text-[12px] text-slate-500">Keine auffälligen Symptome erkannt.</p>
+            <p className="text-[12px] text-gray-400">No notable symptoms detected.</p>
           )}
         </div>
       </div>
 
-      {/* Avoided doctor visits */}
-      <div className="rounded-xl glass-soft px-3.5 py-3">
-        <div className="label mb-1">Arztbesuche vermieden</div>
+      {/* Doctor visits avoided */}
+      <div className="rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-3">
+        <div className="label mb-1">Doctor Visits Avoided</div>
         <div className="mt-1 flex items-end gap-2">
-          <span className="font-mono text-3xl font-semibold text-accent">{avoidsVisits.toLocaleString()}</span>
-          <span className="mb-1 text-xs text-slate-500">Konsultationen</span>
+          <span className="font-mono text-3xl font-semibold text-accent">
+            {avoidsVisits.toLocaleString()}
+          </span>
+          <span className="mb-1 text-xs text-gray-400">consultations</span>
         </div>
-        <div className="mt-1 text-[10px] text-slate-600">geschätzt aus Früherkennungsrate × Checks</div>
+        <div className="mt-1 text-[10px] text-gray-400">estimated from early detection rate × checks</div>
       </div>
 
       {/* Alerts */}
@@ -105,9 +109,15 @@ function CommunityView({ c }) {
         <div className="label mb-2">Community Alerts</div>
         <div className="space-y-2">
           {c.alerts.map((a, i) => (
-            <div key={i} className="flex items-start gap-2.5 rounded-xl border border-white/5 bg-base-800/50 px-3 py-2.5">
-              <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-accent shadow-glow" />
-              <p className="text-[12px] leading-snug text-slate-300">{a}</p>
+            <div
+              key={i}
+              className="flex items-start gap-2.5 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5"
+            >
+              <span
+                className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full"
+                style={{ background: ACCENT }}
+              />
+              <p className="text-[12px] leading-snug text-gray-700">{a}</p>
             </div>
           ))}
         </div>
@@ -119,18 +129,18 @@ function CommunityView({ c }) {
 export default function SidePanel({ building, loading, onClose }) {
   const [tab, setTab] = useState("community");
   const open = Boolean(building) || loading;
-  const color = building ? STATUS_COLORS[building.status] : "#36e2c4";
+  const color = building ? STATUS_COLORS[building.status] : ACCENT;
 
   return (
     <AnimatePresence>
       {open && (
         <motion.aside
           key="panel"
-          initial={{ x: "100%", opacity: 0 }}
+          initial={{ x: "110%", opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: "100%", opacity: 0 }}
+          exit={{ x: "110%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
-          className="absolute right-0 top-0 z-30 flex h-full w-[42vw] min-w-[420px] max-w-[640px] flex-col border-l border-white/[0.07] bg-[#080b12]/85 backdrop-blur-xl"
+          className="absolute right-4 top-4 bottom-4 z-30 flex w-[42vw] min-w-[420px] max-w-[640px] flex-col rounded-2xl bg-white border border-gray-100 shadow-panel overflow-hidden"
         >
           {loading && !building ? (
             <div className="flex h-full items-center justify-center">
@@ -139,43 +149,41 @@ export default function SidePanel({ building, loading, onClose }) {
           ) : building ? (
             <>
               {/* Header */}
-              <div className="relative shrink-0 overflow-hidden border-b border-white/10 px-5 pb-4 pt-5">
-                <div
-                  className="pointer-events-none absolute inset-x-0 top-0 h-20 opacity-20"
-                  style={{ background: `radial-gradient(55% 100% at 18% 0%, ${color}, transparent 72%)` }}
-                />
-                <div className="relative flex items-start justify-between">
-                  <div>
-                    <div className="mb-1.5 flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
-                        style={{ background: `${color}1f`, color }}>
-                        <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: color }} />
-                        {STATUS_LABELS[building.status]}
-                      </span>
-                      {building.robotActive && (
-                        <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
-                          Robot Online
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-xl font-semibold tracking-tight text-white">{building.name}</h2>
-                    <p className="text-[12px] text-slate-400">
+              <div className="shrink-0 border-b border-gray-100 px-5 pb-4 pt-5">
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
+                      <span
+                        className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ background: color }}
+                      />
+                      {building.name}
+                    </h2>
+                    <p className="mt-0.5 text-[12px] text-gray-400">
                       {building.district} · {building.floors} floors
+                      {building.robotActive && (
+                        <span className="ml-2 text-accent">· Robot active</span>
+                      )}
                     </p>
                   </div>
                   <button
                     onClick={onClose}
-                    className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-slate-400 transition hover:bg-white/5 hover:text-white"
+                    className="ml-3 grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-gray-200 text-gray-400 transition hover:bg-gray-50 hover:text-gray-700"
                     aria-label="Close panel"
                   >
                     <svg viewBox="0 0 16 16" className="h-4 w-4">
-                      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                      <path
+                        d="M4 4l8 8M12 4l-8 8"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="relative mt-4 flex gap-1 rounded-xl bg-base-900/60 p-1">
+                <div className="relative mt-4 flex gap-1 rounded-xl bg-gray-100 p-1">
                   {[
                     { id: "community", label: "Community" },
                     { id: "residents", label: `Residents · ${building.residents.length}` },
@@ -188,11 +196,13 @@ export default function SidePanel({ building, loading, onClose }) {
                       {tab === t.id && (
                         <motion.span
                           layoutId="tab-pill"
-                          className="absolute inset-0 rounded-lg bg-accent/15 ring-1 ring-accent/30"
+                          className="absolute inset-0 rounded-lg bg-white shadow-sm"
                           transition={{ type: "spring", stiffness: 400, damping: 32 }}
                         />
                       )}
-                      <span className={`relative ${tab === t.id ? "text-accent" : "text-slate-400"}`}>{t.label}</span>
+                      <span className={`relative ${tab === t.id ? "text-gray-900" : "text-gray-400"}`}>
+                        {t.label}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -206,7 +216,7 @@ export default function SidePanel({ building, loading, onClose }) {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.18 }}
                   >
                     {tab === "community" ? (
                       <CommunityView c={building.community} />

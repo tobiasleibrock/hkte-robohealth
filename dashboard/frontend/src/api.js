@@ -11,9 +11,9 @@ export const fetchBuildings = () => get("/buildings");
 export const fetchBuilding = (id) => get(`/buildings/${id}`);
 
 export const STATUS_COLORS = {
-  stable: "#36e2c4",
-  watch: "#f5c451",
-  alert: "#ff5d73",
+  stable: "#10b981",
+  watch: "#f59e0b",
+  alert: "#ef4444",
 };
 
 export const STATUS_LABELS = {
@@ -23,7 +23,7 @@ export const STATUS_LABELS = {
 };
 
 export const SEVERITY_COLORS = {
-  low: "#36e2c4",
-  moderate: "#f5c451",
-  high: "#ff5d73",
+  low: "#10b981",
+  moderate: "#f59e0b",
+  high: "#ef4444",
 };
