@@ -21,9 +21,11 @@ Judges compare this against `git shortlog -sn`, so keep it honest.
 ## 2. What is fully working
 Features that run end-to-end on the live app, with real data and real logic. Be specific: name the feature, what input it takes, what output it produces.
 
-- Map overview of deployed robots and health data, input: building id, output: community and individual health data ()
+- Dashboard overview with frontend (react) and backend (express) syncing data for visualization
+- Mapbox interactive map integration
 - Supabase database setup with migration files and full deployment (not connected to backend yet, data mocked)
-- tobi
+- Vision analysis script running algorithms from scientific papers on real mp4 data to detect multiple biomarkers (see README) + testing of this
+- PWA Docker and deployment to bot.nightlyfe.de
 
 ---
 
@@ -34,9 +36,9 @@ Every shortcut. Examples: a login that accepts any password, a payment that alwa
 
 | What is faked | Where (file:line or folder) | Why we mocked it | What the real version would do |
 |---|---|---|---|
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
+| Data sources | Backend (data.js) | Could not collect any real data | Use robot to collect data and sync in supabase |
+| Analysis data | Backend + Frontend Dashboard | We had no way to sample Urine or Spit data at all | Try out sample methods and analysis methods |
+| PWA app functionality | app/ folder (TanStack) | We did not built a robot backend that coordinates and orders robots as we dont have access to any (or residents for testing) | Develop and deploy backend with robot integration |
 
 If nothing is mocked, write: *"Nothing is mocked — every feature listed above uses real logic and real data."*
 
@@ -47,8 +49,7 @@ Everything the project calls or pretends to call. Mark each as real or mocked.
 
 | Service / API / dataset | Used for | Real call or mocked? | Auth (sandbox / test key / none) |
 |---|---|---|---|
-|  |  |  |  |
-|  |  |  |  |
+| Mapbox API | Map and building data | Real | Real key |
 
 ---
 
