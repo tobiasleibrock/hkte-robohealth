@@ -170,7 +170,7 @@ export default function StatsPanel({ network, hidden }) {
             </div>
             <div className="flex-1">
               <h1 className="text-[15px] font-semibold leading-tight tracking-tight text-gray-900">
-                Aether Health
+                Pool Health
               </h1>
               <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Hong Kong Fleet</p>
             </div>

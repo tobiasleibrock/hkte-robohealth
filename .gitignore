@@ -45,3 +45,5 @@ expo-env.d.ts
 *.aab
 *.apk
 *.ipa
+*.egg-info
+__pycache__/

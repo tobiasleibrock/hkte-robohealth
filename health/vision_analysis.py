@@ -1,25 +1,3 @@
-#!/usr/bin/env python3
-"""
-Video-based health screening analysis for the Hong Kong HealthBot project.
-
-This module estimates measurements that are realistic from raw RGB video and
-marks measurements that need extra hardware. It is intended for demo/screening
-workflows, not diagnosis or clinical decision making.
-
-Core video measurements:
-  - Face rPPG heart rate from RGB face video using POS/CHROM-style processing.
-  - Approximate pulse irregularity and HRV proxies from rPPG peak intervals.
-  - Respiratory rate from low-frequency motion in a chest/torso ROI.
-  - Respiratory-rate fallback from low-frequency rPPG modulation.
-  - Facial color metrics for pallor/redness/yellowness screening.
-  - Blink rate and eye-aspect-ratio fatigue proxy when MediaPipe is installed.
-  - Basic pixel-space pupillometry when a close face/eye view is present.
-  - Basic gait/frailty motion proxies when full-body pose landmarks are visible.
-
-Optional dependencies:
-  pip install opencv-python numpy scipy mediapipe
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -32,22 +10,22 @@ from typing import Any, Iterable, Optional
 
 try:
     import cv2
-except ImportError as exc:  # pragma: no cover - exercised at runtime
+except ImportError as exc:
     raise SystemExit("opencv-python is required: pip install opencv-python") from exc
 
 try:
     import numpy as np
-except ImportError as exc:  # pragma: no cover - exercised at runtime
+except ImportError as exc:
     raise SystemExit("numpy is required: pip install numpy") from exc
 
 try:
     from scipy import signal
-except ImportError:  # pragma: no cover - graceful fallback
+except ImportError:
     signal = None
 
 try:
     import mediapipe as mp
-except ImportError:  # pragma: no cover - optional feature
+except ImportError:
     mp = None
 
 
@@ -169,14 +147,14 @@ class OptionalMediaPipe:
         self.face_mesh = None
         self.pose = None
         if self.enabled:
-            self.face_mesh = mp.solutions.face_mesh.FaceMesh(  # type: ignore[union-attr]
+            self.face_mesh = mp.solutions.face_mesh.FaceMesh(
                 static_image_mode=False,
                 refine_landmarks=True,
                 max_num_faces=1,
                 min_detection_confidence=0.5,
                 min_tracking_confidence=0.5,
             )
-            self.pose = mp.solutions.pose.Pose(  # type: ignore[union-attr]
+            self.pose = mp.solutions.pose.Pose(
                 static_image_mode=False,
                 model_complexity=1,
                 min_detection_confidence=0.5,
@@ -192,7 +170,6 @@ class OptionalMediaPipe:
 
 def _skin_roi_from_face(frame: np.ndarray, face: tuple[int, int, int, int]) -> Optional[np.ndarray]:
     x, y, w, h = face
-    # Use cheek/forehead-heavy central face while avoiding hair, mouth, and image edges.
     x0 = max(0, x + int(w * 0.25))
     x1 = min(frame.shape[1], x + int(w * 0.75))
     y0 = max(0, y + int(h * 0.18))
@@ -341,7 +318,6 @@ def _facial_color_metrics(rgb_series: np.ndarray) -> dict[str, Optional[float]]:
     relative_redness = red / total
     relative_pallor = 1.0 - (red - blue) / 255.0
     relative_yellowness = (red + green - 2.0 * blue) / 510.0
-    # Screening-only proxy: lower red/green and lower brightness can be consistent with pallor.
     pallor_index = float((1.0 / (rg + 1e-8)) * (1.0 / (brightness + 1e-8)) * 100.0)
     return {
         "mean_red": red,
@@ -363,7 +339,6 @@ def _landmark_xy(landmarks: Any, index: int, width: int, height: int) -> np.ndar
 
 
 def _eye_aspect_ratio(landmarks: Any, width: int, height: int, eye: str) -> Optional[float]:
-    # MediaPipe Face Mesh landmarks around each eye.
     indices = {
         "left": (33, 160, 158, 133, 153, 144),
         "right": (362, 385, 387, 263, 373, 380),

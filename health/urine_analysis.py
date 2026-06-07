@@ -1,36 +1,3 @@
-#!/usr/bin/env python3
-"""Video-based urine-strip analysis for the HK HealthBot prototype.
-
-This module is intentionally conservative: it calculates measurements that can
-realistically be derived from a video of a urine dipstick or fixed urine-reader
-cartridge. Non-urine measurements such as face rPPG, respiration, gait, and eye
-analysis belong in ``vision_analysis.py``.
-
-Implemented urine measurements:
-  - pH
-  - specific gravity
-  - glucose
-  - ketones
-  - protein / albumin proxy
-  - blood / hematuria proxy
-  - bilirubin
-  - urobilinogen
-  - nitrite
-  - leukocytes
-  - UTI screen from nitrite + leukocyte esterase
-
-Research basis used while writing this implementation:
-  - Smartphone urine-strip readers use calibrated colorimetric analysis and
-    semiquantitative RGB/Lab matching against reagent-pad charts.
-    https://pubs.acs.org/doi/10.1021/acsomega.8b01270
-    https://pmc.ncbi.nlm.nih.gov/articles/PMC9320386/
-
-This file is not a medical device. Outputs are screening/prototype values only.
-Clinical use requires a validated cartridge geometry, controlled illumination,
-calibration targets, reagent-specific timing, locked software, and local
-regulatory review.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -43,14 +10,14 @@ from pathlib import Path
 from typing import Any, Iterable
 
 try:
-    import cv2  # type: ignore
-except ImportError:  # pragma: no cover - user environment dependent
-    cv2 = None  # type: ignore
+    import cv2
+except ImportError:
+    cv2 = None
 
 try:
     import numpy as np
-except ImportError:  # pragma: no cover - user environment dependent
-    np = None  # type: ignore
+except ImportError:
+    np = None
 
 
 VERSION = "0.1.0"
@@ -70,8 +37,6 @@ URINE_MARKERS = [
 ]
 
 
-# Approximate reagent-pad reference colors. These are generic defaults for a
-# prototype only. Production must load manufacturer-specific charts from config.
 DEFAULT_URINE_CHARTS: dict[str, list[dict[str, Any]]] = {
     "leukocytes": [
         {"label": "negative", "value": "negative", "rgb": [238, 226, 201]},
@@ -313,12 +278,6 @@ def robust_frame(frames: list[Any]) -> Any:
 
 
 def apply_color_calibration(rgb: list[float], config: dict[str, Any], frame: Any | None = None) -> list[float]:
-    """Apply simple white/black balance from config.
-
-    Config examples:
-      "calibration": {"white_rgb": [245,245,240], "black_rgb": [20,20,20]}
-      "calibration": {"white_roi": [0.1,0.1,0.05,0.05], "black_roi": [...]}
-    """
     calibration = config.get("calibration") or {}
     white = calibration.get("white_rgb")
     black = calibration.get("black_rgb", [0, 0, 0])
@@ -356,11 +315,6 @@ def nearest_chart_value(marker: str, rgb: list[float], charts: dict[str, list[di
 
 
 def infer_pad_rois(frame: Any, expected: int = 10) -> list[tuple[int, int, int, int]]:
-    """Best-effort dipstick pad detection for demos.
-
-    This works only when the strip is clearly visible on a plain background.
-    Fixed cartridge ROIs from config are strongly preferred.
-    """
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     saturation = hsv[:, :, 1]
     value = hsv[:, :, 2]
@@ -384,8 +338,6 @@ def infer_pad_rois(frame: Any, expected: int = 10) -> list[tuple[int, int, int, 
         return []
 
     candidates.sort(key=lambda r: (r[1], r[0]))
-    # Pick the longest approximately linear sequence. Most dipsticks place pads
-    # along one axis; sorting by dominant spread handles horizontal/vertical.
     xs = [x + w / 2 for x, y, w, h in candidates]
     ys = [y + h / 2 for x, y, w, h in candidates]
     if statistics.pstdev(xs) >= statistics.pstdev(ys):

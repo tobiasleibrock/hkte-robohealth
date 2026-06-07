@@ -18,7 +18,7 @@ export default function TopBar({ network }) {
           </svg>
         </div>
         <div className="pr-1">
-          <h1 className="text-[15px] font-semibold leading-tight tracking-tight text-white">Aether Health</h1>
+          <h1 className="text-[15px] font-semibold leading-tight tracking-tight text-white">Pool Health</h1>
           <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">Hong Kong Fleet</p>
         </div>
       </div>
