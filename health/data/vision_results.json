@@ -1,0 +1,141 @@
+{
+  "estimates": {
+    "blink_rate": {
+      "confidence": "unavailable",
+      "limitations": [
+        "Skipped without MediaPipe; affected by glasses, gaze direction, face angle, and frame rate."
+      ],
+      "method": "MediaPipe Face Mesh eye-aspect-ratio thresholding",
+      "unit": "blinks_per_min",
+      "value": null
+    },
+    "facial_pallor_index": {
+      "confidence": "low",
+      "limitations": [
+        "Not a hemoglobin measurement.",
+        "Requires calibrated lighting and per-user baseline for meaningful screening."
+      ],
+      "method": "Mean RGB cheek/forehead color ratios",
+      "unit": "arbitrary_index",
+      "value": 0.7251232607518696
+    },
+    "heart_rate": {
+      "confidence": "low",
+      "limitations": [
+        "Sensitive to motion, compression, lighting, skin visibility, and camera auto-exposure.",
+        "Use for trend/demo screening only unless validated against ECG/PPG hardware."
+      ],
+      "method": "RGB face rPPG, POS/CHROM spectral peak",
+      "unit": "bpm",
+      "value": 55.06353064100743
+    },
+    "hrv_rmssd": {
+      "confidence": "low",
+      "limitations": [
+        "RGB rPPG peak timing is much less reliable than ECG.",
+        "Short recordings cannot support clinical HRV interpretation."
+      ],
+      "method": "Inter-peak intervals from rPPG waveform",
+      "unit": "ms",
+      "value": 223.57590073387723
+    },
+    "lateral_sway": {
+      "confidence": "unavailable",
+      "limitations": [
+        "Pixel-space sway is not comparable across camera distances without calibration."
+      ],
+      "method": "Frame-to-frame body-center variability from pose landmarks",
+      "unit": "pixels",
+      "value": null
+    },
+    "pulse_irregularity_index": {
+      "confidence": "low",
+      "limitations": [
+        "Not an atrial-fibrillation detector; ECG is required for rhythm diagnosis."
+      ],
+      "method": "Coefficient of variation of rPPG peak intervals",
+      "unit": "coefficient_of_variation",
+      "value": 0.3052117435331399
+    },
+    "respiratory_rate": {
+      "confidence": "high",
+      "limitations": [
+        "Body sway, talking, clothing, camera motion, and poor torso framing can dominate breathing motion.",
+        "Radar/depth/thermal sensors are more robust for respiration."
+      ],
+      "method": "Low-frequency motion spectrum in torso ROI",
+      "unit": "breaths_per_min",
+      "value": 10.011551025637715
+    },
+    "step_rate": {
+      "confidence": "unavailable",
+      "limitations": [
+        "Needs a full-body walking view and camera geometry calibration for real gait speed/stride length.",
+        "Use depth camera or calibrated multi-camera setup for clinical gait analysis."
+      ],
+      "method": "MediaPipe Pose ankle-separation periodicity",
+      "unit": "steps_per_min",
+      "value": null
+    }
+  },
+  "metrics": {
+    "blink": {
+      "blink_count": null,
+      "blink_rate_per_min": null,
+      "mean_eye_aspect_ratio": null
+    },
+    "face_detection_rate": 1.0,
+    "facial_color": {
+      "blue_green_ratio": 0.8455596471725474,
+      "brightness": 88.03434601464176,
+      "mean_blue": 65.44831225260202,
+      "mean_green": 77.40236003810959,
+      "mean_red": 121.25236575321365,
+      "pallor_index": 0.7251232607518696,
+      "red_green_ratio": 1.566520267312896
+    },
+    "gait": {
+      "ankle_separation_variability_px": null,
+      "lateral_sway_px": null,
+      "step_rate_per_min": null
+    },
+    "respiration_motion": {
+      "confidence_score": 0.31412271501751227,
+      "samples": 587
+    },
+    "rppg": {
+      "chrom_confidence_score": 0.0940083249322007,
+      "chrom_heart_rate_bpm": 55.06353064100743,
+      "pos_confidence_score": 0.08848786984728971,
+      "pos_heart_rate_bpm": 135.15593884610917,
+      "pulse_irregularity_index": 0.3052117435331399,
+      "rmssd_ms": 223.57590073387723,
+      "sdnn_ms": 171.09520780616361
+    }
+  },
+  "non_video_measurements": {
+    "blood_pressure": "Requires cuff, calibrated PPG/PTT hardware, or validated cuffless device; raw video is insufficient.",
+    "breath_voc": "Requires gas sensors, e-nose, spectroscopy, or lab analysis.",
+    "ecg_rhythm": "Requires electrodes or radar system validated for cardiac waveform recovery.",
+    "environment": "Requires environmental sensors for CO2, PM2.5, formaldehyde, humidity, noise, etc.",
+    "fundus_retina": "Requires fundus optics/illumination; standard face video is not enough.",
+    "glucose": "Requires CGM, blood, saliva, sweat, or validated spectroscopy hardware.",
+    "nasal_throat_pathogens": "Requires PCR/antigen/molecular assay.",
+    "saliva_diagnostics": "Requires biochemical assay/cartridge; video cannot infer cortisol/glucose/pathogens.",
+    "skin_temperature": "Requires calibrated IR/thermal camera, not ordinary RGB video.",
+    "spo2": "Requires multispectral/NIR calibration or pulse oximeter; RGB video alone is not reliable.",
+    "tcm_tongue": "Possible from controlled tongue images, but needs a trained/validated model and lighting protocol.",
+    "urinalysis": "Requires urine strip/cartridge images with controlled lighting and reference calibration."
+  },
+  "video": {
+    "duration_seconds": 24.557,
+    "fps": 23.9442928696502,
+    "frames_processed": 588,
+    "height": 720,
+    "path": "data/video.mp4",
+    "width": 1280
+  },
+  "warnings": [
+    "MediaPipe is not installed; blink and pose/gait measurements were skipped."
+  ]
+}
